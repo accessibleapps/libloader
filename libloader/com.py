@@ -1,7 +1,7 @@
 from pywintypes import com_error
+from win32com.client import gencache
 
 def prepare_gencache():
- from win32com.client import gencache
  gencache.is_readonly = False
  gencache.GetGeneratePath()
 
