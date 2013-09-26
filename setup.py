@@ -6,6 +6,7 @@ setup(
  version = __version__,
  description = __doc__,
  packages = find_packages(),
+ zip_safe = False,
  classifiers = [
   'Development Status :: 3 - Alpha',
   'Intended Audience :: Developers',
