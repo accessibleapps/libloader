@@ -6,8 +6,9 @@ def prepare_gencache():
  gencache.GetGeneratePath()
 
 
-
 def load_com(*names):
+ if gencache.is_readonly:
+  prepare_gencache()
  result = None
  for name in names:
   try:
