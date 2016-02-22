@@ -1,6 +1,6 @@
 from .libloader import *
 
-__version__ = 0.2
+__version__ = 0.21
 __author__ = 'Christopher Toth'
 __author_email__ = '<q@q-continuum.net>'
 __doc__ = """
