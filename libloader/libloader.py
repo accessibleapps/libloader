@@ -29,9 +29,6 @@ if platform.system() == 'Windows':
 class LibraryLoadError(OSError): pass
 
 def load_library(library, x86_path='.', x64_path='.', *args, **kwargs):
- library = library.encode(sys.getfilesystemencoding())
- x86_path = x86_path.encode(sys.getfilesystemencoding())
- x64_path = x64_path.encode(sys.getfilesystemencoding())
  lib = find_library_path(library, x86_path=x86_path, x64_path=x64_path)
  loaded = _do_load(lib, *args, **kwargs)
  if loaded is not None:
