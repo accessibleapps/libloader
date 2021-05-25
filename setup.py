@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 from libloader import __author__, __author_email__, __doc__, __version__
 
+
 setup(
     name="libloader",
     version=__version__,
