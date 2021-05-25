@@ -4,6 +4,7 @@ import platform
 import os
 import sys
 
+
 TYPES = {
     "Linux": {
         "loader": ctypes.CDLL,
