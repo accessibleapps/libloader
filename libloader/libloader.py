@@ -37,15 +37,15 @@ class LibraryLoadError(OSError):
 
 
 def load_library(library, x86_path=".", x64_path=".", *args, **kwargs):
-    logger.info("Attempting to load library: %s", library)
+    logger.debug("Attempting to load library: %s", library)
     logger.debug("x86_path: %s, x64_path: %s", os.path.abspath(x86_path), os.path.abspath(x64_path))
     
     lib = find_library_path(library, x86_path=x86_path, x64_path=x64_path)
-    logger.info("Resolved library path: %s", lib)
+    logger.debug("Resolved library path: %s", lib)
     
     loaded = _do_load(lib, *args, **kwargs)
     if loaded is not None:
-        logger.info("Successfully loaded library: %s", lib)
+        logger.info("Successfully loaded library: %s", os.path.basename(lib))
         return loaded
     
     logger.error("Failed to load library: %s", lib)
@@ -87,7 +87,6 @@ def find_library_path(libname, x86_path=".", x64_path="."):
     path = "%s%s" % (path, ext)
     abs_path = os.path.abspath(path)
     
-    logger.info("Resolved library path: %s", abs_path)
     logger.debug("Path exists: %s", os.path.exists(abs_path))
     
     return abs_path
