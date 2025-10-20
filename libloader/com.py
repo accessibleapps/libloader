@@ -1,4 +1,5 @@
 import logging
+
 from pywintypes import com_error
 from win32com.client import gencache
 
@@ -30,5 +31,5 @@ def load_com(*names):
             continue
     if result is None:
         logger.error("Failed to load any COM objects. Tried: %s", failed_names)
-        raise com_error("Unable to load any of the provided com objects: %s" % failed_names)
+        raise com_error(f"Unable to load any of the provided com objects: {failed_names}")
     return result
