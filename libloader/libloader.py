@@ -34,11 +34,16 @@ class LibraryLoadError(OSError):
     pass
 
 
-def load_library(library, x86_path=".", x64_path=".", *args, **kwargs):
+def load_library(library, x86_path=".", x64_path=".", arm64_path=None, *args, **kwargs):
     logger.debug("Attempting to load library: %s", library)
-    logger.debug("x86_path: %s, x64_path: %s", os.path.abspath(x86_path), os.path.abspath(x64_path))
+    logger.debug(
+        "x86_path: %s, x64_path: %s, arm64_path: %s",
+        os.path.abspath(x86_path),
+        os.path.abspath(x64_path),
+        os.path.abspath(arm64_path) if arm64_path is not None else None,
+    )
 
-    lib = find_library_path(library, x86_path=x86_path, x64_path=x64_path)
+    lib = find_library_path(library, x86_path=x86_path, x64_path=x64_path, arm64_path=arm64_path)
     logger.debug("Resolved library path: %s", lib)
 
     loaded = _do_load(lib, *args, **kwargs)
@@ -61,21 +66,34 @@ def _do_load(file, *args, **kwargs):
         return None
 
 
-def find_library_path(libname, x86_path=".", x64_path="."):
+def find_library_path(libname, x86_path=".", x64_path=".", arm64_path=None):
     system = platform.system()
     prefix = TYPES[system]["prefix"]
     libname_with_prefix = f"{prefix}{libname}"
     logger.debug("Library name with prefix: %s", libname_with_prefix)
 
-    arch = platform.architecture()[0]
-    logger.debug("Detected architecture: %s", arch)
+    # Get actual machine architecture
+    machine = platform.machine().lower()
+    logger.debug("Detected machine architecture: %s", machine)
 
-    if arch == "64bit":
+    # Map machine architecture to the appropriate path
+    if machine in ("arm64", "aarch64"):
+        # ARM64 architecture (M1+ Macs, ARM servers, modern Raspberry Pi)
+        if arm64_path is None:
+            logger.debug("ARM64 detected, arm64_path not specified, falling back to x64_path")
+            path = os.path.join(x64_path, libname_with_prefix)
+            logger.debug("Using fallback x64 path: %s", x64_path)
+        else:
+            path = os.path.join(arm64_path, libname_with_prefix)
+            logger.debug("Using ARM64 path: %s", arm64_path)
+    elif machine in ("x86_64", "amd64", "x64"):
+        # 64-bit x86 architecture (Intel/AMD)
         path = os.path.join(x64_path, libname_with_prefix)
-        logger.debug("Using 64-bit path: %s", x64_path)
+        logger.debug("Using x86_64 path: %s", x64_path)
     else:
+        # 32-bit x86 or other architectures
         path = os.path.join(x86_path, libname_with_prefix)
-        logger.debug("Using 32-bit path: %s", x86_path)
+        logger.debug("Using x86 path for architecture '%s': %s", machine, x86_path)
 
     ext = get_library_extension()
     logger.debug("Using library extension: %s", ext)
