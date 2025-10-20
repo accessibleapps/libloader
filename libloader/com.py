@@ -9,13 +9,13 @@ logger = logging.getLogger(__name__)
 
 def prepare_gencache():
     logger.debug("Preparing gencache for COM object loading")
-    gencache.is_readonly = False
-    gencache.GetGeneratePath()
+    gencache.is_readonly = False  # type: ignore[attr-defined]
+    gencache.GetGeneratePath()  # type: ignore[attr-defined]
 
 
 def load_com(*names):
     logger.debug("Attempting to load COM objects: %s", names)
-    if gencache.is_readonly:
+    if gencache.is_readonly:  # type: ignore[attr-defined]
         prepare_gencache()
     result = None
     failed_names = []
