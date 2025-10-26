@@ -30,6 +30,6 @@ def load_com(*names):
             failed_names.append(name)
             continue
     if result is None:
-        logger.error("Failed to load any COM objects. Tried: %s", failed_names)
+        logger.debug("Failed to load any COM objects. Tried: %s", failed_names)
         raise com_error(f"Unable to load any of the provided com objects: {failed_names}")
     return result
