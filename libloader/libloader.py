@@ -2,6 +2,7 @@ import ctypes
 import logging
 import os
 import platform
+import struct
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -72,11 +73,15 @@ def find_library_path(libname, x86_path=".", x64_path=".", arm64_path=None):
     libname_with_prefix = f"{prefix}{libname}"
     logger.debug("Library name with prefix: %s", libname_with_prefix)
 
-    # Get actual machine architecture
+    # Detect Python interpreter bitness (not OS architecture)
+    pointer_bits = struct.calcsize("P") * 8
+    logger.debug("Detected Python interpreter bitness: %d-bit", pointer_bits)
+
+    # Get machine architecture for ARM64 detection
     machine = platform.machine().lower()
     logger.debug("Detected machine architecture: %s", machine)
 
-    # Map machine architecture to the appropriate path
+    # Map architecture to the appropriate path
     if machine in ("arm64", "aarch64"):
         # ARM64 architecture (M1+ Macs, ARM servers, modern Raspberry Pi)
         if arm64_path is None:
@@ -86,14 +91,14 @@ def find_library_path(libname, x86_path=".", x64_path=".", arm64_path=None):
         else:
             path = os.path.join(arm64_path, libname_with_prefix)
             logger.debug("Using ARM64 path: %s", arm64_path)
-    elif machine in ("x86_64", "amd64", "x64"):
-        # 64-bit x86 architecture (Intel/AMD)
+    elif pointer_bits == 64:
+        # 64-bit Python interpreter (x86_64)
         path = os.path.join(x64_path, libname_with_prefix)
-        logger.debug("Using x86_64 path: %s", x64_path)
+        logger.debug("Using x64 path (64-bit Python): %s", x64_path)
     else:
-        # 32-bit x86 or other architectures
+        # 32-bit Python interpreter (x86)
         path = os.path.join(x86_path, libname_with_prefix)
-        logger.debug("Using x86 path for architecture '%s': %s", machine, x86_path)
+        logger.debug("Using x86 path (%d-bit Python): %s", pointer_bits, x86_path)
 
     ext = get_library_extension()
     logger.debug("Using library extension: %s", ext)
