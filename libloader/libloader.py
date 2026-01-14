@@ -3,6 +3,7 @@ import logging
 import os
 import platform
 import struct
+from typing import Optional, Protocol, Type
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -31,6 +32,19 @@ if platform.system() == "Windows":
     }
 
 
+class CFuncTypeFactory(Protocol):
+    """Protocol for ctypes function type factories (CFUNCTYPE/WINFUNCTYPE)."""
+
+    def __call__(
+        self,
+        restype: Optional[type],
+        *argtypes: type,
+        use_errno: bool = ...,
+        use_last_error: bool = ...,
+    ) -> Type[ctypes._CFuncPtr]:  # pyright: ignore[reportAttributeAccessIssue]
+        ...
+
+
 class LibraryLoadError(OSError):
     pass
 
@@ -56,7 +70,7 @@ def load_library(library, x86_path=".", x64_path=".", arm64_path=None, *args, **
     raise LibraryLoadError(f"unable to load {library!r}. Provided library path: {lib!r}")
 
 
-def _do_load(file, *args, **kwargs):
+def _do_load(file, *args, **kwargs) -> Optional[ctypes.CDLL]:
     system = platform.system()
     logger.debug("Using loader for system: %s", system)
     loader = TYPES[system]["loader"]
@@ -67,7 +81,7 @@ def _do_load(file, *args, **kwargs):
         return None
 
 
-def find_library_path(libname, x86_path=".", x64_path=".", arm64_path=None):
+def find_library_path(libname, x86_path=".", x64_path=".", arm64_path=None) -> str:
     system = platform.system()
     prefix = TYPES[system]["prefix"]
     libname_with_prefix = f"{prefix}{libname}"
@@ -111,9 +125,9 @@ def find_library_path(libname, x86_path=".", x64_path=".", arm64_path=None):
     return abs_path
 
 
-def get_functype():
+def get_functype() -> CFuncTypeFactory:
     return TYPES[platform.system()]["functype"]
 
 
-def get_library_extension():
+def get_library_extension() -> str:
     return TYPES[platform.system()]["extension"]
